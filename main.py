@@ -134,7 +134,7 @@ if prompt_data:
                 try:
                     tr = st.session_state.client.models.generate_content(model="gemini-3.5-flash-lite", contents=f"Translate this image request into a short English visual prompt. Output ONLY the English prompt: {teks}")
                     prompt_bersih = urllib.parse.quote(tr.text.strip()[:150])
-                    url = f"https://pollinations.ai{prompt_bersih}?width=768&height=768&nologo=true"
+                    url = "https://pollinations.ai" + urllib.parse.quote(tr.text.strip()[:120]) + "?width=768&height=768&nologo=true"
                     img_out = Image.open(io.BytesIO(requests.get(url, timeout=30).content))
                     st.image(img_out, width=280)
                     st.markdown("Ini gambar yang sudah Rionex buatkan untukmu!")
