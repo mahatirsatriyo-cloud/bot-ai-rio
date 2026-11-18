@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image
 from google import genai
 from google.genai import types
@@ -6,7 +7,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom dengan Ikon Kamera Vektor (SVG) Modern
+# 2. CSS Kustom: Tampilan Modern + Tombol Ikon Lensa Kamera ala Google
 st.markdown("""
 <style>
 /* Sembunyikan menu & footer bawaan Streamlit */
@@ -20,7 +21,7 @@ st.markdown("""
     display: none !important;
 }
 
-/* Gaya gelembung pesan Pengguna (rata kanan, sudut membulat seperti ChatGPT) */
+/* Gelembung pesan Pengguna (rata kanan seperti Meta AI / ChatGPT) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     background-color: rgba(128, 128, 128, 0.15) !important;
     border-radius: 20px !important;
@@ -30,14 +31,14 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     width: fit-content !important;
 }
 
-/* Gaya jawaban AI (bersih tanpa kotak kaku & tanpa logo) */
+/* Jawaban AI (bersih tanpa kotak kaku & tanpa avatar) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
     background-color: transparent !important;
     padding: 8px 4px !important;
     max-width: 100% !important;
 }
 
-/* Pastikan baris header & bar input bawah selalu sejajar rapi */
+/* Pastikan baris header & bar input bawah selalu sejajar rapi di HP */
 div[data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -49,52 +50,55 @@ div[data-testid="stColumn"] {
     min-width: 0 !important;
 }
 
-/* Desain Tombol Kamera Modern (Bulat Elegan + Ikon Vektor SVG) */
-div[data-testid="stBottom"] button[kind="secondary"] {
-    border-radius: 50% !important;
+/* Ubah File Uploader di bar bawah menjadi Tombol Bulat Ikon Lensa Kamera ala Google */
+div[data-testid="stBottom"] [data-testid="stFileUploader"] {
     width: 44px !important;
     height: 44px !important;
+    margin: 0 !important;
     padding: 0 !important;
+}
+
+div[data-testid="stBottom"] [data-testid="stFileUploader"] label,
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzoneInstructions"],
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] button,
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] svg,
+div[data-testid="stBottom"] [data-testid="stFileUploaderFile"] {
+    display: none !important;
+}
+
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] {
+    width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    background-color: rgba(128, 128, 128, 0.12) !important;
+    border: 1px solid rgba(128, 128, 128, 0.25) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    background-color: rgba(128, 128, 128, 0.12) !important;
-    border: 1px solid rgba(128, 128, 128, 0.25) !important;
-    color: transparent !important;
-    font-size: 0 !important;
-    transition: all 0.2s ease !important;
-    position: relative !important;
+    cursor: pointer !important;
+    /* Ikon Lensa Kamera Modern ala Google (SVG) */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: 21px 21px !important;
 }
 
-div[data-testid="stBottom"] button[kind="secondary"]:hover {
-    background-color: rgba(128, 128, 128, 0.25) !important;
-    transform: scale(1.05) !important;
-}
-
-/* Menyisipkan Ikon Kamera Vektor Modern di tengah tombol */
-div[data-testid="stBottom"] button[kind="secondary"]::after {
-    content: "";
-    width: 21px;
-    height: 21px;
-    background-color: currentColor;
-    color: #8E929B;
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") no-repeat center;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") no-repeat center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]:hover {
+    background-color: rgba(128, 128, 128, 0.22) !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
 # 3. Header Minimalis di Bagian Atas
-col_title, col_clear = st.columns([4, 1.2])
+col_title, col_clear = st.columns([4, 1.3])
 with col_title:
     st.markdown("#### **Rionex**")
 with col_clear:
     if st.button("Reset", use_container_width=True):
         st.session_state.messages = []
-        st.session_state.buka_kamera = False
-        st.session_state.foto_kamera = None
+        st.session_state.cam_key += 1
         if "client" in st.session_state:
             st.session_state.chat = st.session_state.client.chats.create(
                 model="gemini-3.5-flash-lite",
@@ -134,10 +138,8 @@ if "chat" not in st.session_state:
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "buka_kamera" not in st.session_state:
-    st.session_state.buka_kamera = False
-if "foto_kamera" not in st.session_state:
-    st.session_state.foto_kamera = None
+if "cam_key" not in st.session_state:
+    st.session_state.cam_key = 0
 
 # 5. Layar Sambutan Bersih Saat Belum Ada Chat
 if len(st.session_state.messages) == 0:
@@ -152,37 +154,7 @@ for message in st.session_state.messages:
             st.image(message["image"], width=240)
         st.markdown(message["content"])
 
-# 7. Jendela Kamera (Hanya terbuka saat ikon kamera diklik)
-if st.session_state.buka_kamera:
-    with st.container(border=True):
-        c_cam1, c_cam2 = st.columns([5, 1])
-        with c_cam1:
-            st.markdown("**Ambil Foto**")
-        with c_cam2:
-            if st.button("✕"):
-                st.session_state.buka_kamera = False
-                st.rerun()
-        
-        jepretan = st.camera_input("Kamera", label_visibility="collapsed")
-        if jepretan is not None:
-            st.session_state.foto_kamera = Image.open(jepretan)
-            st.session_state.buka_kamera = False
-            st.rerun()
-
-# Pratinjau mini jika foto dari kamera sudah siap dikirim
-if st.session_state.foto_kamera is not None:
-    with st.container(border=True):
-        c1, c2, c3 = st.columns([1, 3.5, 1])
-        with c1:
-            st.image(st.session_state.foto_kamera, width=55)
-        with c2:
-            st.caption("Foto siap dikirim. Ketik pesan di bawah.")
-        with c3:
-            if st.button("Batal"):
-                st.session_state.foto_kamera = None
-                st.rerun()
-
-# 8. Bar Ketik Pesan Bawah + Tombol Kamera Vektor Modern
+# 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera Langsung Native
 with st._bottom:
     col_input, col_cam = st.columns([6.5, 1])
     with col_input:
@@ -192,21 +164,54 @@ with st._bottom:
             file_type=["jpg", "jpeg", "png", "webp"]
         )
     with col_cam:
-        if st.button("Cam", help="Ambil foto dari kamera"):
-            st.session_state.buka_kamera = not st.session_state.buka_kamera
-            st.rerun()
+        foto_langsung = st.file_uploader(
+            "Kamera",
+            type=["jpg", "jpeg", "png", "webp"],
+            key=f"cam_native_{st.session_state.cam_key}",
+            label_visibility="collapsed"
+        )
 
-# 9. Proses Pengiriman Pesan
+# Mengaktifkan kamera belakang HP secara langsung saat tombol kamera ditekan
+components.html("""
+<script>
+const setNativeCamera = () => {
+    const inputs = window.parent.document.querySelectorAll('div[data-testid="stBottom"] input[type="file"]');
+    inputs.forEach(input => {
+        if (!input.hasAttribute('capture')) {
+            input.setAttribute('capture', 'environment');
+        }
+    });
+};
+setNativeCamera();
+setInterval(setNativeCamera, 1000);
+</script>
+""", height=0)
+
+# Pratinjau mini jika foto sudah dijepret dari kamera HP
+if foto_langsung is not None:
+    gambar_preview = Image.open(foto_langsung)
+    with st.container(border=True):
+        c1, c2, c3 = st.columns([1, 3.5, 1.2])
+        with c1:
+            st.image(gambar_preview, width=55)
+        with c2:
+            st.caption("Foto siap dikirim. Ketik pertanyaan di bawah.")
+        with c3:
+            if st.button("Batal"):
+                st.session_state.cam_key += 1
+                st.rerun()
+
+# 8. Proses Pengiriman Pesan
 if prompt_data:
     teks_pesan = prompt_data.text
-    file_galeri = prompt_data.files[0] if prompt_data.files else None
+    file_galeri = prompt_data.files if prompt_data.files else None
 
     gambar_terpilih = None
     if file_galeri is not None:
         gambar_terpilih = Image.open(file_galeri)
-    elif st.session_state.foto_kamera is not None:
-        gambar_terpilih = st.session_state.foto_kamera
-        st.session_state.foto_kamera = None
+    elif foto_langsung is not None:
+        gambar_terpilih = Image.open(foto_langsung)
+        st.session_state.cam_key += 1  # Reset kamera setelah terkirim
 
     if not teks_pesan and gambar_terpilih:
         teks_pesan = "Jelaskan isi gambar ini secara detail."
@@ -234,5 +239,7 @@ if prompt_data:
                     "role": "assistant",
                     "content": response.text
                 })
+                if foto_langsung is not None:
+                    st.rerun()
             except Exception as e:
                 st.error(f"Terjadi kesalahan: {e}")
