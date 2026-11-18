@@ -1,4 +1,6 @@
 import io
+import urllib.parse
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
@@ -8,7 +10,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom: Tema Bersih, Tanpa Badge Streamlit & Tombol Kamera Elegan
+# 2. CSS Kustom: Tema Putih Bersih, Tanpa Badge Streamlit & Tombol Kamera
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
@@ -154,8 +156,8 @@ if "upload_key" not in st.session_state:
 def cek_permintaan_gambar(teks):
     kata_kunci = [
         "buatkan gambar", "buat gambar", "bikin gambar", "bikinkan gambar",
-        "gambarkan", "gambarin", "lukiskan", "generate image", "create image",
-        "desainkan", "buatkan foto", "bikin foto", "ilustrasi"
+        "buatkan saya gambar", "buatin gambar", "gambarkan", "gambarin",
+        "lukiskan", "generate image", "create image", "buatkan foto", "bikin foto"
     ]
     teks_kecil = teks.lower()
     return any(kata in teks_kecil for kata in kata_kunci)
@@ -171,7 +173,6 @@ for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         if "image" in message and message["image"] is not None:
             st.image(message["image"], width=280)
-            # Tambahkan tombol unduh jika gambar berasal dari Rionex
             if message["role"] == "assistant":
                 buf = io.BytesIO()
                 message["image"].save(buf, format="PNG")
