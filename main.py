@@ -7,7 +7,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom: Tampilan Modern + Tombol Ikon Lensa Kamera ala Google
+# 2. CSS Kustom: Mengunci Ukuran Tombol Kamera agar Tidak Melebar Menutupi Tombol Kirim
 st.markdown("""
 <style>
 /* Sembunyikan menu & footer bawaan Streamlit */
@@ -50,7 +50,25 @@ div[data-testid="stColumn"] {
     min-width: 0 !important;
 }
 
-/* Ubah File Uploader di bar bawah menjadi Tombol Bulat Ikon Lensa Kamera ala Google */
+/* Kunci kolom kedua di bar bawah (tombol kamera) agar ukurannya tetap 46px dan tidak melebar */
+div[data-testid="stBottom"] div[data-testid="stColumn"]:nth-child(2) {
+    flex: 0 0 46px !important;
+    width: 46px !important;
+    max-width: 46px !important;
+    overflow: hidden !important;
+}
+
+/* Sembunyikan daftar nama file (1794996... 3.4MB) yang melebar ke samping */
+div[data-testid="stBottom"] [data-testid="stFileUploader"] ul,
+div[data-testid="stBottom"] [data-testid="stFileUploader"] li,
+div[data-testid="stBottom"] [data-testid="stFileUploaderFile"],
+div[data-testid="stBottom"] [data-testid="stFileUploader"] label,
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzoneInstructions"],
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] button,
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] svg {
+    display: none !important;
+}
+
 div[data-testid="stBottom"] [data-testid="stFileUploader"] {
     width: 44px !important;
     height: 44px !important;
@@ -58,35 +76,27 @@ div[data-testid="stBottom"] [data-testid="stFileUploader"] {
     padding: 0 !important;
 }
 
-div[data-testid="stBottom"] [data-testid="stFileUploader"] label,
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzoneInstructions"],
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] button,
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] svg,
-div[data-testid="stBottom"] [data-testid="stFileUploaderFile"] {
-    display: none !important;
-}
-
+/* Desain Tombol Bulat Ikon Lensa Kamera ala Google */
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] {
     width: 44px !important;
     height: 44px !important;
     min-height: 44px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background-color: rgba(128, 128, 128, 0.12) !important;
-    border: 1px solid rgba(128, 128, 128, 0.25) !important;
+    background-color: rgba(128, 128, 128, 0.15) !important;
+    border: 1px solid rgba(128, 128, 128, 0.3) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    /* Ikon Lensa Kamera Modern ala Google (SVG) */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%238E929B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
     background-position: center !important;
     background-size: 21px 21px !important;
 }
 
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]:hover {
-    background-color: rgba(128, 128, 128, 0.22) !important;
+    background-color: rgba(128, 128, 128, 0.25) !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -187,7 +197,7 @@ setInterval(setNativeCamera, 1000);
 </script>
 """, height=0)
 
-# Pratinjau mini jika foto sudah dijepret dari kamera HP
+# Pratinjau mini rapi di atas kotak ketik jika foto sudah dijepret dari kamera HP
 if foto_langsung is not None:
     gambar_preview = Image.open(foto_langsung)
     with st.container(border=True):
@@ -211,7 +221,7 @@ if prompt_data:
         gambar_terpilih = Image.open(file_galeri)
     elif foto_langsung is not None:
         gambar_terpilih = Image.open(foto_langsung)
-        st.session_state.cam_key += 1  # Reset kamera setelah terkirim
+        st.session_state.cam_key += 1
 
     if not teks_pesan and gambar_terpilih:
         teks_pesan = "Jelaskan isi gambar ini secara detail."
