@@ -10,10 +10,8 @@ st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_ico
 # 2. CSS Kustom: Logo Kamera Keren & Tombol Kirim Selalu Terlihat
 st.markdown("""
 <style>
-/* Sembunyikan menu & footer bawaan Streamlit */
 #MainMenu, footer, header {visibility: hidden;}
 
-/* Hilangkan total ikon avatar robot & wajah pengguna */
 [data-testid="stChatMessageAvatarUser"],
 [data-testid="stChatMessageAvatarAssistant"],
 [data-testid="chatAvatarIcon-user"],
@@ -21,7 +19,6 @@ st.markdown("""
     display: none !important;
 }
 
-/* Gelembung pesan Pengguna (rata kanan seperti Meta AI / ChatGPT) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     background-color: rgba(128, 128, 128, 0.15) !important;
     border-radius: 20px !important;
@@ -31,14 +28,12 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     width: fit-content !important;
 }
 
-/* Jawaban AI (bersih tanpa kotak kaku & tanpa avatar) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
     background-color: transparent !important;
     padding: 8px 4px !important;
     max-width: 100% !important;
 }
 
-/* Pastikan baris header & bar input bawah selalu sejajar rapi */
 div[data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -50,14 +45,12 @@ div[data-testid="stColumn"] {
     min-width: 0 !important;
 }
 
-/* Kunci lebar kolom kamera agar tidak pernah menutupi tombol kirim */
 div[data-testid="stBottom"] div[data-testid="stColumn"]:nth-child(2) {
     flex: 0 0 48px !important;
     width: 48px !important;
     max-width: 48px !important;
 }
 
-/* Sembunyikan daftar teks nama file agar tidak melebar ke samping */
 div[data-testid="stBottom"] [data-testid="stFileUploader"] ul,
 div[data-testid="stBottom"] [data-testid="stFileUploader"] li,
 div[data-testid="stBottom"] [data-testid="stFileUploaderFile"],
@@ -65,7 +58,6 @@ div[data-testid="stBottom"] [data-testid="stFileUploader"] > label {
     display: none !important;
 }
 
-/* Jadikan kotak upload sebagai Tombol Bulat dengan Logo Kamera Keren */
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] {
     width: 46px !important;
     height: 46px !important;
@@ -88,7 +80,6 @@ div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]:hover {
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
 }
 
-/* Sembunyikan teks instruksi bawaan di dalam dropzone */
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] > div {
     opacity: 0 !important;
     width: 100% !important;
@@ -97,7 +88,6 @@ div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] > div {
     inset: 0 !important;
 }
 
-/* Tampilkan Ikon Lensa Kamera Putih Tajam di tengah lingkaran */
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]::before {
     content: "" !important;
     width: 22px !important;
@@ -191,7 +181,6 @@ with st._bottom:
             label_visibility="collapsed"
         )
 
-# Mengaktifkan kamera belakang HP secara langsung saat tombol kamera ditekan
 components.html("""
 <script>
 const setNativeCamera = () => {
@@ -207,7 +196,6 @@ setInterval(setNativeCamera, 1000);
 </script>
 """, height=0)
 
-# Pratinjau mini rapi di atas kotak ketik jika foto sudah dijepret dari kamera HP
 if foto_langsung is not None:
     gambar_preview = Image.open(foto_langsung)
     with st.container(border=True):
@@ -262,3 +250,4 @@ if prompt_data:
                 if foto_langsung is not None:
                     st.rerun()
             except Exception as e:
+                st.error(f"Terjadi kesalahan: {e}")
