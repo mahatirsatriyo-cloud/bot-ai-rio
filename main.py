@@ -9,11 +9,13 @@ from google.genai import types
 
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
+# CSS Kustom: Tema Putih Bersih & Logo Kamera Bulat Modern
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
 div[class*="viewerBadge"], div[data-testid="stStatusWidget"], [data-testid="manage-app-button"], .stAppDeployButton {display: none !important;}
 [data-testid="stChatMessageAvatarUser"], [data-testid="stChatMessageAvatarAssistant"] {display: none !important;}
+
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     background-color: #F4F4F5 !important;
     color: #0F172A !important;
@@ -23,15 +25,19 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     max-width: 80% !important;
     width: fit-content !important;
 }
+
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
     background-color: transparent !important;
     color: #0F172A !important;
     padding: 8px 4px !important;
     max-width: 100% !important;
 }
+
 div[data-testid="stHorizontalBlock"] {flex-direction: row !important; flex-wrap: nowrap !important; align-items: center !important; gap: 8px !important;}
 div[data-testid="stColumn"] {min-width: 0 !important;}
 div[data-testid="stBottom"] div[data-testid="stColumn"]:nth-child(2) {flex: 0 0 46px !important; width: 46px !important; max-width: 46px !important;}
+
+/* Tombol Bulat Kamera Modern */
 div[data-testid="stBottom"] [data-testid="stPopover"] > button {
     width: 44px !important; height: 44px !important; min-height: 44px !important; padding: 0 !important;
     border-radius: 50% !important; background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
@@ -127,7 +133,8 @@ if prompt_data:
             with st.spinner("Rionex sedang menggambar..."):
                 try:
                     tr = st.session_state.client.models.generate_content(model="gemini-3.5-flash-lite", contents=f"Translate this image request into a short English visual prompt. Output ONLY the English prompt: {teks}")
-                    url = f"https://pollinations.ai{urllib.parse.quote(tr.text.strip())}?width=768&height=768&nologo=true"
+                    prompt_bersih = urllib.parse.quote(tr.text.strip()[:150])
+                    url = f"https://pollinations.ai{prompt_bersih}?width=768&height=768&nologo=true"
                     img_out = Image.open(io.BytesIO(requests.get(url, timeout=30).content))
                     st.image(img_out, width=280)
                     st.markdown("Ini gambar yang sudah Rionex buatkan untukmu!")
