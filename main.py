@@ -1,3 +1,4 @@
+import io
 import streamlit as st
 import streamlit.components.v1 as components
 from PIL import Image
@@ -7,7 +8,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom: Tampilan Bersih & Tombol Logo Kamera Bulat Elegan
+# 2. CSS Kustom: Tema Bersih, Tanpa Badge Streamlit & Tombol Kamera Elegan
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
@@ -29,7 +30,8 @@ div[data-testid="stStatusWidget"],
 
 /* Gelembung pesan Pengguna (rata kanan seperti ChatGPT) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
-    background-color: rgba(128, 128, 128, 0.15) !important;
+    background-color: #F4F4F5 !important;
+    color: #0F172A !important;
     border-radius: 20px !important;
     padding: 12px 18px !important;
     margin-left: auto !important;
@@ -148,18 +150,40 @@ if "messages" not in st.session_state:
 if "upload_key" not in st.session_state:
     st.session_state.upload_key = 0
 
+# Fungsi Deteksi Permintaan Pembuatan Gambar
+def cek_permintaan_gambar(teks):
+    kata_kunci = [
+        "buatkan gambar", "buat gambar", "bikin gambar", "bikinkan gambar",
+        "gambarkan", "gambarin", "lukiskan", "generate image", "create image",
+        "desainkan", "buatkan foto", "bikin foto", "ilustrasi"
+    ]
+    teks_kecil = teks.lower()
+    return any(kata in teks_kecil for kata in kata_kunci)
+
 # 5. Layar Sambutan Bersih
 if len(st.session_state.messages) == 0:
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align: center; font-weight: 600;'>Halo, ada yang bisa Rionex bantu?</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Dikembangkan oleh Rio Ferdian</p>", unsafe_allow_html=True)
 
-# 6. Menampilkan Riwayat Obrolan
-for message in st.session_state.messages:
+# 6. Menampilkan Riwayat Obrolan (Teks & Gambar)
+for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         if "image" in message and message["image"] is not None:
-            st.image(message["image"], width=240)
-        st.markdown(message["content"])
+            st.image(message["image"], width=280)
+            # Tambahkan tombol unduh jika gambar berasal dari Rionex
+            if message["role"] == "assistant":
+                buf = io.BytesIO()
+                message["image"].save(buf, format="PNG")
+                st.download_button(
+                    label="⬇️ Unduh Gambar",
+                    data=buf.getvalue(),
+                    file_name=f"rionex_image_{idx}.png",
+                    mime="image/png",
+                    key=f"dl_btn_{idx}"
+                )
+        if message["content"]:
+            st.markdown(message["content"])
 
 # 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera dengan Pilihan
 foto_kamera = None
@@ -169,7 +193,7 @@ with st._bottom:
     col_input, col_cam = st.columns([6.5, 1])
     with col_input:
         prompt_data = st.chat_input(
-            "Tanya Rionex...",
+            "Tanya Rionex atau minta buatkan gambar...",
             accept_file=True,
             file_type=["jpg", "jpeg", "png", "webp"]
         )
@@ -187,15 +211,14 @@ with st._bottom:
                 key=f"gal_{st.session_state.upload_key}"
             )
 
-# Khususkan mode kamera hanya pada uploader pertama di dalam menu popover
 components.html("""
 <script>
 const setCameraOnly = () => {
     const popovers = window.parent.document.querySelectorAll('[data-testid="stPopoverBody"]');
     popovers.forEach(pop => {
         const inputs = pop.querySelectorAll('input[type="file"]');
-        if (inputs.length > 0 && !inputs[0].hasAttribute('capture')) {
-            inputs[0].setAttribute('capture', 'environment');
+        if (inputs.length > 0 && !inputs.hasAttribute('capture')) {
+            inputs.setAttribute('capture', 'environment');
         }
     });
 };
@@ -204,7 +227,6 @@ setInterval(setCameraOnly, 800);
 </script>
 """, height=0)
 
-# Cek apakah ada foto yang dipilih dari menu Kamera atau Galeri
 foto_dari_menu = foto_kamera if foto_kamera is not None else foto_galeri_menu
 
 if foto_dari_menu is not None:
@@ -237,7 +259,7 @@ if prompt_data:
 
     with st.chat_message("user"):
         if gambar_terpilih is not None:
-            st.image(gambar_terpilih, width=240)
+            st.image(gambar_terpilih, width=250)
         if teks_pesan:
             st.markdown(teks_pesan)
 
@@ -246,19 +268,3 @@ if prompt_data:
         "content": teks_pesan,
         "image": gambar_terpilih
     })
-
-    isi_pesan = [gambar_terpilih, teks_pesan] if gambar_terpilih is not None else teks_pesan
-
-    with st.chat_message("assistant"):
-        with st.spinner("Rionex sedang berpikir..."):
-            try:
-                response = st.session_state.chat.send_message(isi_pesan)
-                st.markdown(response.text)
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": response.text
-                })
-                if foto_dari_menu is not None:
-                    st.rerun()
-            except Exception as e:
-                st.error(f"Terjadi kesalahan: {e}")
