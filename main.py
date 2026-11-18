@@ -6,7 +6,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom untuk Tampilan Modern Tanpa Avatar Kartun
+# 2. CSS Kustom dengan Ikon Kamera Vektor (SVG) Modern
 st.markdown("""
 <style>
 /* Sembunyikan menu & footer bawaan Streamlit */
@@ -37,7 +37,7 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"
     max-width: 100% !important;
 }
 
-/* Pastikan baris header & bar input bawah selalu sejajar rapi di HP maupun Laptop */
+/* Pastikan baris header & bar input bawah selalu sejajar rapi */
 div[data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
@@ -49,7 +49,7 @@ div[data-testid="stColumn"] {
     min-width: 0 !important;
 }
 
-/* Tombol kamera bulat minimalis di samping kotak ketik */
+/* Desain Tombol Kamera Modern (Bulat Elegan + Ikon Vektor SVG) */
 div[data-testid="stBottom"] button[kind="secondary"] {
     border-radius: 50% !important;
     width: 44px !important;
@@ -58,7 +58,30 @@ div[data-testid="stBottom"] button[kind="secondary"] {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    border: 1px solid rgba(128, 128, 128, 0.3) !important;
+    background-color: rgba(128, 128, 128, 0.12) !important;
+    border: 1px solid rgba(128, 128, 128, 0.25) !important;
+    color: transparent !important;
+    font-size: 0 !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+}
+
+div[data-testid="stBottom"] button[kind="secondary"]:hover {
+    background-color: rgba(128, 128, 128, 0.25) !important;
+    transform: scale(1.05) !important;
+}
+
+/* Menyisipkan Ikon Kamera Vektor Modern di tengah tombol */
+div[data-testid="stBottom"] button[kind="secondary"]::after {
+    content: "";
+    width: 21px;
+    height: 21px;
+    background-color: currentColor;
+    color: #8E929B;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") no-repeat center;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -132,7 +155,7 @@ for message in st.session_state.messages:
 # 7. Jendela Kamera (Hanya terbuka saat ikon kamera diklik)
 if st.session_state.buka_kamera:
     with st.container(border=True):
-        c_cam1, c_cam2 = st.columns([4, 1])
+        c_cam1, c_cam2 = st.columns([5, 1])
         with c_cam1:
             st.markdown("**Ambil Foto**")
         with c_cam2:
@@ -159,7 +182,7 @@ if st.session_state.foto_kamera is not None:
                 st.session_state.foto_kamera = None
                 st.rerun()
 
-# 8. Bar Ketik Pesan Bawah + Tombol Kamera Sejajar
+# 8. Bar Ketik Pesan Bawah + Tombol Kamera Vektor Modern
 with st._bottom:
     col_input, col_cam = st.columns([6.5, 1])
     with col_input:
@@ -169,7 +192,7 @@ with st._bottom:
             file_type=["jpg", "jpeg", "png", "webp"]
         )
     with col_cam:
-        if st.button("📷", help="Ambil foto dari kamera"):
+        if st.button("Cam", help="Ambil foto dari kamera"):
             st.session_state.buka_kamera = not st.session_state.buka_kamera
             st.rerun()
 
