@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 
 # 1. Konfigurasi Halaman Web
-st.set_page_config(page_title="Rio Ferdian AI", page_icon="✨", layout="centered")
+st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
 # 2. CSS Kustom untuk Tampilan Modern Tanpa Avatar Kartun
 st.markdown("""
@@ -66,7 +66,7 @@ div[data-testid="stBottom"] button[kind="secondary"] {
 # 3. Header Minimalis di Bagian Atas
 col_title, col_clear = st.columns([4, 1.2])
 with col_title:
-    st.markdown("#### **Rio Ferdian AI**")
+    st.markdown("#### **Rionex**")
 with col_clear:
     if st.button("Reset", use_container_width=True):
         st.session_state.messages = []
@@ -77,8 +77,9 @@ with col_clear:
                 model="gemini-3.5-flash-lite",
                 config=types.GenerateContentConfig(
                     system_instruction="""
-                    Kamu adalah asisten AI yang cerdas, ramah, dan membantu.
-                    Jika ada yang bertanya siapa penciptamu, pemilikmu, atau siapa yang membuatmu, jawablah dengan bangga bahwa penciptamu adalah Rio Ferdian.
+                    Kamu adalah Rionex, asisten AI generasi terbaru yang cerdas, ramah, dan membantu.
+                    Jika ada yang bertanya siapa namamu, jawablah Rionex.
+                    Jika ada yang bertanya siapa pencipta, pemilik, atau pengembangmu, jawablah dengan bangga bahwa kamu dikembangkan oleh Rio Ferdian.
                     Jawablah selalu menggunakan bahasa Indonesia yang baik dan mudah dimengerti.
                     """,
                     temperature=0.7,
@@ -90,8 +91,9 @@ with col_clear:
 API_KEY = st.secrets["GEMINI_API_KEY"]
 
 identitas_bot = """
-Kamu adalah asisten AI yang cerdas, ramah, dan membantu.
-Jika ada yang bertanya siapa penciptamu, pemilikmu, atau siapa yang membuatmu, jawablah dengan bangga bahwa penciptamu adalah Rio Ferdian.
+Kamu adalah Rionex, asisten AI generasi terbaru yang cerdas, ramah, dan membantu.
+Jika ada yang bertanya siapa namamu, jawablah Rionex.
+Jika ada yang bertanya siapa pencipta, pemilik, atau pengembangmu, jawablah dengan bangga bahwa kamu dikembangkan oleh Rio Ferdian.
 Jawablah selalu menggunakan bahasa Indonesia yang baik dan mudah dimengerti.
 """
 
@@ -117,7 +119,7 @@ if "foto_kamera" not in st.session_state:
 # 5. Layar Sambutan Bersih Saat Belum Ada Chat
 if len(st.session_state.messages) == 0:
     st.markdown("<br><br>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: center; font-weight: 600;'>Ada yang bisa saya bantu?</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: center; font-weight: 600;'>Halo, ada yang bisa Rionex bantu?</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Dikembangkan oleh Rio Ferdian</p>", unsafe_allow_html=True)
 
 # 6. Menampilkan Riwayat Obrolan Tanpa Avatar
@@ -130,7 +132,7 @@ for message in st.session_state.messages:
 # 7. Jendela Kamera (Hanya terbuka saat ikon kamera diklik)
 if st.session_state.buka_kamera:
     with st.container(border=True):
-        c_cam1, c_cam2 = st.columns([5, 1])
+        c_cam1, c_cam2 = st.columns([4, 1])
         with c_cam1:
             st.markdown("**Ambil Foto**")
         with c_cam2:
@@ -162,7 +164,7 @@ with st._bottom:
     col_input, col_cam = st.columns([6.5, 1])
     with col_input:
         prompt_data = st.chat_input(
-            "Tanya apa saja...",
+            "Tanya Rionex...",
             accept_file=True,
             file_type=["jpg", "jpeg", "png", "webp"]
         )
@@ -201,7 +203,7 @@ if prompt_data:
     isi_pesan = [gambar_terpilih, teks_pesan] if gambar_terpilih is not None else teks_pesan
 
     with st.chat_message("assistant"):
-        with st.spinner("Mengetik..."):
+        with st.spinner("Rionex sedang berpikir..."):
             try:
                 response = st.session_state.chat.send_message(isi_pesan)
                 st.markdown(response.text)
