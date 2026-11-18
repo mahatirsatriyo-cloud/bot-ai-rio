@@ -6,7 +6,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="AI Bot - Rio Ferdian", page_icon="🤖")
 
-# Header dan tombol hapus chat di bagian atas
+# Header dan tombol hapus chat
 kolom_judul, kolom_tombol = st.columns([4, 1])
 with kolom_judul:
     st.title("🤖 Asisten AI Pintar")
@@ -61,23 +61,37 @@ for message in st.session_state.messages:
             st.image(message["image"], width=250)
         st.markdown(message["content"])
 
-# 5. Kolom Ketik Pesan dengan Tombol Lampirkan Foto Langsung di Dalamnya
+# 5. Tombol Kamera Langsung (Popover) di Bagian Bawah
+foto_kamera = None
+with st.popover("📷 Buka Kamera Langsung"):
+    jepretan = st.camera_input("Ambil foto menggunakan kamera")
+    if jepretan is not None:
+        foto_kamera = Image.open(jepretan)
+        st.success("Foto kamera siap! Ketik pertanyaan Anda di bawah lalu kirim.")
+
+# 6. Kolom Ketik Pesan + Lampiran Galeri
 prompt_data = st.chat_input(
-    "Ketik pertanyaan atau lampirkan foto...",
+    "Ketik pertanyaan atau lampirkan foto galeri...",
     accept_file=True,
     file_type=["jpg", "jpeg", "png", "webp"]
 )
 
 if prompt_data:
     teks_pesan = prompt_data.text
-    file_foto = prompt_data.files[0] if prompt_data.files else None
-    gambar_terpilih = Image.open(file_foto) if file_foto else None
+    file_galeri = prompt_data.files[0] if prompt_data.files else None
+    
+    # Prioritaskan foto dari galeri jika ada, jika tidak pakai foto dari kamera
+    gambar_terpilih = None
+    if file_galeri is not None:
+        gambar_terpilih = Image.open(file_galeri)
+    elif foto_kamera is not None:
+        gambar_terpilih = foto_kamera
 
-    # Jika pengguna mengirim foto tanpa mengetik teks, beri perintah bawaan
+    # Perintah bawaan jika pengguna hanya mengirim gambar tanpa teks
     if not teks_pesan and gambar_terpilih:
         teks_pesan = "Jelaskan isi gambar ini secara detail."
 
-    # Tampilkan pesan dan foto pengguna di layar
+    # Tampilkan pesan dan gambar pengguna di layar
     with st.chat_message("user"):
         if gambar_terpilih is not None:
             st.image(gambar_terpilih, width=250)
@@ -95,7 +109,7 @@ if prompt_data:
 
     # Kirim ke AI dan tampilkan balasannya
     with st.chat_message("assistant"):
-        with st.spinner("Sedang berpikir..."):
+        with st.spinner("Sedang menganalisis..."):
             try:
                 response = st.session_state.chat.send_message(isi_pesan)
                 st.markdown(response.text)
