@@ -11,6 +11,13 @@ st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_ico
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
+div[class*="viewerBadge"],
+div[data-testid="stStatusWidget"],
+[data-testid="manage-app-button"],
+.stAppDeployButton {
+    display: none !important;
+    visibility: hidden !important;
+}
 
 /* Hilangkan avatar robot & wajah pengguna */
 [data-testid="stChatMessageAvatarUser"],
