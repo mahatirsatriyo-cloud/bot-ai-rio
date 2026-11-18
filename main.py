@@ -10,7 +10,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom: Tema Putih Bersih, Tanpa Badge Streamlit & Tombol Kamera
+# 2. CSS Kustom: Tema Putih Bersih & Tata Letak Chat Modern
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
@@ -19,18 +19,15 @@ div[data-testid="stStatusWidget"],
 [data-testid="manage-app-button"],
 .stAppDeployButton {
     display: none !important;
-    visibility: hidden !important;
 }
 
-/* Hilangkan avatar robot & wajah pengguna */
+/* Sembunyikan ikon avatar bulat saja tanpa menyembunyikan isi pesan */
 [data-testid="stChatMessageAvatarUser"],
-[data-testid="stChatMessageAvatarAssistant"],
-[data-testid="chatAvatarIcon-user"],
-[data-testid="chatAvatarIcon-assistant"] {
+[data-testid="stChatMessageAvatarAssistant"] {
     display: none !important;
 }
 
-/* Gelembung pesan Pengguna (rata kanan seperti ChatGPT) */
+/* Gelembung pesan Pengguna (rata kanan) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     background-color: #F4F4F5 !important;
     color: #0F172A !important;
@@ -41,9 +38,10 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     width: fit-content !important;
 }
 
-/* Jawaban AI (bersih tanpa kotak kaku) */
+/* Jawaban AI (tampil penuh dan jelas di kiri) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
     background-color: transparent !important;
+    color: #0F172A !important;
     padding: 8px 4px !important;
     max-width: 100% !important;
 }
@@ -67,7 +65,7 @@ div[data-testid="stBottom"] div[data-testid="stColumn"]:nth-child(2) {
     max-width: 46px !important;
 }
 
-/* Desain Tombol Bulat dengan Logo Kamera Vektor Putih */
+/* Tombol Bulat Kamera Biru Modern */
 div[data-testid="stBottom"] [data-testid="stPopover"] > button {
     width: 44px !important;
     height: 44px !important;
@@ -152,7 +150,6 @@ if "messages" not in st.session_state:
 if "upload_key" not in st.session_state:
     st.session_state.upload_key = 0
 
-# Fungsi Deteksi Permintaan Pembuatan Gambar
 def cek_permintaan_gambar(teks):
     kata_kunci = [
         "buatkan gambar", "buat gambar", "bikin gambar", "bikinkan gambar",
@@ -168,7 +165,7 @@ if len(st.session_state.messages) == 0:
     st.markdown("<h2 style='text-align: center; font-weight: 600;'>Halo, ada yang bisa Rionex bantu?</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Dikembangkan oleh Rio Ferdian</p>", unsafe_allow_html=True)
 
-# 6. Menampilkan Riwayat Obrolan (Teks & Gambar)
+# 6. Menampilkan Riwayat Obrolan Sebelumnya
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         if "image" in message and message["image"] is not None:
@@ -186,7 +183,7 @@ for idx, message in enumerate(st.session_state.messages):
         if message["content"]:
             st.markdown(message["content"])
 
-# 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera dengan Pilihan
+# 7. Bar Bawah: Kotak Ketik & Tombol Kamera dengan Pilihan
 foto_kamera = None
 foto_galeri_menu = None
 
@@ -243,7 +240,7 @@ if foto_dari_menu is not None:
                 st.session_state.upload_key += 1
                 st.rerun()
 
-# 8. Proses Pengiriman Pesan
+# 8. Proses Pengiriman Pesan & Tampilkan Langsung Tanpa Memutus Layar
 if prompt_data:
     teks_pesan = prompt_data.text
     file_chat_input = prompt_data.files if prompt_data.files else None
@@ -253,11 +250,11 @@ if prompt_data:
         gambar_terpilih = Image.open(file_chat_input)
     elif foto_dari_menu is not None:
         gambar_terpilih = Image.open(foto_dari_menu)
-        st.session_state.upload_key += 1
 
     if not teks_pesan and gambar_terpilih:
         teks_pesan = "Jelaskan isi gambar ini secara detail."
 
+    # Tampilkan pesan pengguna langsung
     with st.chat_message("user"):
         if gambar_terpilih is not None:
             st.image(gambar_terpilih, width=250)
@@ -269,3 +266,6 @@ if prompt_data:
         "content": teks_pesan,
         "image": gambar_terpilih
     })
+
+    # Tampilkan balasan AI langsung di bawahnya
+    with st.chat_message("assistant"):
