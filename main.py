@@ -7,7 +7,7 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom: Mengunci Ukuran Tombol Kamera agar Tidak Melebar Menutupi Tombol Kirim
+# 2. CSS Kustom: Logo Kamera Keren & Tombol Kirim Selalu Terlihat
 st.markdown("""
 <style>
 /* Sembunyikan menu & footer bawaan Streamlit */
@@ -38,65 +38,75 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"
     max-width: 100% !important;
 }
 
-/* Pastikan baris header & bar input bawah selalu sejajar rapi di HP */
+/* Pastikan baris header & bar input bawah selalu sejajar rapi */
 div[data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 8px !important;
+    gap: 10px !important;
 }
 
 div[data-testid="stColumn"] {
     min-width: 0 !important;
 }
 
-/* Kunci kolom kedua di bar bawah (tombol kamera) agar ukurannya tetap 46px dan tidak melebar */
+/* Kunci lebar kolom kamera agar tidak pernah menutupi tombol kirim */
 div[data-testid="stBottom"] div[data-testid="stColumn"]:nth-child(2) {
-    flex: 0 0 46px !important;
-    width: 46px !important;
-    max-width: 46px !important;
-    overflow: hidden !important;
+    flex: 0 0 48px !important;
+    width: 48px !important;
+    max-width: 48px !important;
 }
 
-/* Sembunyikan daftar nama file (1794996... 3.4MB) yang melebar ke samping */
+/* Sembunyikan daftar teks nama file agar tidak melebar ke samping */
 div[data-testid="stBottom"] [data-testid="stFileUploader"] ul,
 div[data-testid="stBottom"] [data-testid="stFileUploader"] li,
 div[data-testid="stBottom"] [data-testid="stFileUploaderFile"],
-div[data-testid="stBottom"] [data-testid="stFileUploader"] label,
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzoneInstructions"],
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] button,
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] svg {
+div[data-testid="stBottom"] [data-testid="stFileUploader"] > label {
     display: none !important;
 }
 
-div[data-testid="stBottom"] [data-testid="stFileUploader"] {
-    width: 44px !important;
-    height: 44px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-/* Desain Tombol Bulat Ikon Lensa Kamera ala Google */
+/* Jadikan kotak upload sebagai Tombol Bulat dengan Logo Kamera Keren */
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] {
-    width: 44px !important;
-    height: 44px !important;
-    min-height: 44px !important;
+    width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background-color: rgba(128, 128, 128, 0.15) !important;
-    border: 1px solid rgba(128, 128, 128, 0.3) !important;
+    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     cursor: pointer !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='22' height='22' viewBox='0 0 24 24' fill='none' stroke='%238E929B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3'/%3E%3C/svg%3E") !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-    background-size: 21px 21px !important;
+    position: relative !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]:hover {
-    background-color: rgba(128, 128, 128, 0.25) !important;
+    transform: scale(1.08) !important;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Sembunyikan teks instruksi bawaan di dalam dropzone */
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] > div {
+    opacity: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    position: absolute !important;
+    inset: 0 !important;
+}
+
+/* Tampilkan Ikon Lensa Kamera Putih Tajam di tengah lingkaran */
+div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]::before {
+    content: "" !important;
+    width: 22px !important;
+    height: 22px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://w3.org' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'/%3E%3Ccircle cx='12' cy='13' r='3.5'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: center !important;
+    background-size: contain !important;
+    pointer-events: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -164,7 +174,7 @@ for message in st.session_state.messages:
             st.image(message["image"], width=240)
         st.markdown(message["content"])
 
-# 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera Langsung Native
+# 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera Keren
 with st._bottom:
     col_input, col_cam = st.columns([6.5, 1])
     with col_input:
@@ -252,4 +262,3 @@ if prompt_data:
                 if foto_langsung is not None:
                     st.rerun()
             except Exception as e:
-                st.error(f"Terjadi kesalahan: {e}")
