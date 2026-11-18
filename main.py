@@ -7,11 +7,12 @@ from google.genai import types
 # 1. Konfigurasi Halaman Web
 st.set_page_config(page_title="Rionex - Dikembangkan oleh Rio Ferdian", page_icon="⚡", layout="centered")
 
-# 2. CSS Kustom: Logo Kamera Keren & Tombol Kirim Selalu Terlihat
+# 2. CSS Kustom: Tampilan Bersih & Tombol Logo Kamera Bulat Elegan
 st.markdown("""
 <style>
 #MainMenu, footer, header {visibility: hidden;}
 
+/* Hilangkan avatar robot & wajah pengguna */
 [data-testid="stChatMessageAvatarUser"],
 [data-testid="stChatMessageAvatarAssistant"],
 [data-testid="chatAvatarIcon-user"],
@@ -19,6 +20,7 @@ st.markdown("""
     display: none !important;
 }
 
+/* Gelembung pesan Pengguna (rata kanan seperti ChatGPT) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     background-color: rgba(128, 128, 128, 0.15) !important;
     border-radius: 20px !important;
@@ -28,67 +30,56 @@ div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarUser"]) {
     width: fit-content !important;
 }
 
+/* Jawaban AI (bersih tanpa kotak kaku) */
 div[data-testid="stChatMessage"]:has([data-testid="stChatMessageAvatarAssistant"]) {
     background-color: transparent !important;
     padding: 8px 4px !important;
     max-width: 100% !important;
 }
 
+/* Pastikan baris header & bar input bawah selalu sejajar rapi */
 div[data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: nowrap !important;
     align-items: center !important;
-    gap: 10px !important;
+    gap: 8px !important;
 }
 
 div[data-testid="stColumn"] {
     min-width: 0 !important;
 }
 
+/* Kunci ukuran kolom tombol kamera di bar bawah */
 div[data-testid="stBottom"] div[data-testid="stColumn"]:nth-child(2) {
-    flex: 0 0 48px !important;
-    width: 48px !important;
-    max-width: 48px !important;
-}
-
-div[data-testid="stBottom"] [data-testid="stFileUploader"] ul,
-div[data-testid="stBottom"] [data-testid="stFileUploader"] li,
-div[data-testid="stBottom"] [data-testid="stFileUploaderFile"],
-div[data-testid="stBottom"] [data-testid="stFileUploader"] > label {
-    display: none !important;
-}
-
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] {
+    flex: 0 0 46px !important;
     width: 46px !important;
-    height: 46px !important;
-    min-height: 46px !important;
+    max-width: 46px !important;
+}
+
+/* Desain Tombol Bulat dengan Logo Kamera Vektor Putih */
+div[data-testid="stBottom"] [data-testid="stPopover"] > button {
+    width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
     padding: 0 !important;
     border-radius: 50% !important;
-    background: linear-gradient(135deg, #2b5876 0%, #4e4376 100%) !important;
+    background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%) !important;
     border: none !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    box-shadow: 0 3px 10px rgba(37, 99, 235, 0.3) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    cursor: pointer !important;
+    color: transparent !important;
+    font-size: 0 !important;
     position: relative !important;
-    transition: transform 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]:hover {
-    transform: scale(1.08) !important;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+div[data-testid="stBottom"] [data-testid="stPopover"] > button p,
+div[data-testid="stBottom"] [data-testid="stPopover"] > button svg {
+    display: none !important;
 }
 
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"] > div {
-    opacity: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    position: absolute !important;
-    inset: 0 !important;
-}
-
-div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]::before {
+div[data-testid="stBottom"] [data-testid="stPopover"] > button::after {
     content: "" !important;
     width: 22px !important;
     height: 22px !important;
@@ -96,19 +87,18 @@ div[data-testid="stBottom"] [data-testid="stFileUploaderDropzone"]::before {
     background-repeat: no-repeat !important;
     background-position: center !important;
     background-size: contain !important;
-    pointer-events: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# 3. Header Minimalis di Bagian Atas
+# 3. Header Minimalis
 col_title, col_clear = st.columns([4, 1.3])
 with col_title:
     st.markdown("#### **Rionex**")
 with col_clear:
     if st.button("Reset", use_container_width=True):
         st.session_state.messages = []
-        st.session_state.cam_key += 1
+        st.session_state.upload_key += 1
         if "client" in st.session_state:
             st.session_state.chat = st.session_state.client.chats.create(
                 model="gemini-3.5-flash-lite",
@@ -148,23 +138,26 @@ if "chat" not in st.session_state:
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
-if "cam_key" not in st.session_state:
-    st.session_state.cam_key = 0
+if "upload_key" not in st.session_state:
+    st.session_state.upload_key = 0
 
-# 5. Layar Sambutan Bersih Saat Belum Ada Chat
+# 5. Layar Sambutan Bersih
 if len(st.session_state.messages) == 0:
     st.markdown("<br><br>", unsafe_allow_html=True)
     st.markdown("<h2 style='text-align: center; font-weight: 600;'>Halo, ada yang bisa Rionex bantu?</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; color: gray; font-size: 14px;'>Dikembangkan oleh Rio Ferdian</p>", unsafe_allow_html=True)
 
-# 6. Menampilkan Riwayat Obrolan Tanpa Avatar
+# 6. Menampilkan Riwayat Obrolan
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         if "image" in message and message["image"] is not None:
             st.image(message["image"], width=240)
         st.markdown(message["content"])
 
-# 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera Keren
+# 7. Bar Bawah: Kotak Ketik (+ Galeri) & Tombol Kamera dengan Pilihan
+foto_kamera = None
+foto_galeri_menu = None
+
 with st._bottom:
     col_input, col_cam = st.columns([6.5, 1])
     with col_input:
@@ -174,52 +167,63 @@ with st._bottom:
             file_type=["jpg", "jpeg", "png", "webp"]
         )
     with col_cam:
-        foto_langsung = st.file_uploader(
-            "Kamera",
-            type=["jpg", "jpeg", "png", "webp"],
-            key=f"cam_native_{st.session_state.cam_key}",
-            label_visibility="collapsed"
-        )
+        with st.popover("📷", help="Kamera & Galeri"):
+            st.markdown("**Pilih Sumber Foto**")
+            foto_kamera = st.file_uploader(
+                "📸 Ambil Foto (Kamera)",
+                type=["jpg", "jpeg", "png", "webp"],
+                key=f"cam_{st.session_state.upload_key}"
+            )
+            foto_galeri_menu = st.file_uploader(
+                "🖼️ Pilih dari Galeri",
+                type=["jpg", "jpeg", "png", "webp"],
+                key=f"gal_{st.session_state.upload_key}"
+            )
 
+# Khususkan mode kamera hanya pada uploader pertama di dalam menu popover
 components.html("""
 <script>
-const setNativeCamera = () => {
-    const inputs = window.parent.document.querySelectorAll('div[data-testid="stBottom"] input[type="file"]');
-    inputs.forEach(input => {
-        if (!input.hasAttribute('capture')) {
-            input.setAttribute('capture', 'environment');
+const setCameraOnly = () => {
+    const popovers = window.parent.document.querySelectorAll('[data-testid="stPopoverBody"]');
+    popovers.forEach(pop => {
+        const inputs = pop.querySelectorAll('input[type="file"]');
+        if (inputs.length > 0 && !inputs[0].hasAttribute('capture')) {
+            inputs[0].setAttribute('capture', 'environment');
         }
     });
 };
-setNativeCamera();
-setInterval(setNativeCamera, 1000);
+setCameraOnly();
+setInterval(setCameraOnly, 800);
 </script>
 """, height=0)
 
-if foto_langsung is not None:
-    gambar_preview = Image.open(foto_langsung)
+# Cek apakah ada foto yang dipilih dari menu Kamera atau Galeri
+foto_dari_menu = foto_kamera if foto_kamera is not None else foto_galeri_menu
+
+if foto_dari_menu is not None:
+    gambar_preview = Image.open(foto_dari_menu)
     with st.container(border=True):
         c1, c2, c3 = st.columns([1, 3.5, 1.2])
         with c1:
             st.image(gambar_preview, width=55)
         with c2:
-            st.caption("Foto siap dikirim. Ketik pertanyaan di bawah.")
+            st.caption("Foto siap dikirim. Ketik pesan di bawah.")
         with c3:
             if st.button("Batal"):
-                st.session_state.cam_key += 1
+                st.session_state.upload_key += 1
                 st.rerun()
 
 # 8. Proses Pengiriman Pesan
 if prompt_data:
     teks_pesan = prompt_data.text
-    file_galeri = prompt_data.files if prompt_data.files else None
+    file_chat_input = prompt_data.files if prompt_data.files else None
 
     gambar_terpilih = None
-    if file_galeri is not None:
-        gambar_terpilih = Image.open(file_galeri)
-    elif foto_langsung is not None:
-        gambar_terpilih = Image.open(foto_langsung)
-        st.session_state.cam_key += 1
+    if file_chat_input is not None:
+        gambar_terpilih = Image.open(file_chat_input)
+    elif foto_dari_menu is not None:
+        gambar_terpilih = Image.open(foto_dari_menu)
+        st.session_state.upload_key += 1
 
     if not teks_pesan and gambar_terpilih:
         teks_pesan = "Jelaskan isi gambar ini secara detail."
@@ -247,7 +251,7 @@ if prompt_data:
                     "role": "assistant",
                     "content": response.text
                 })
-                if foto_langsung is not None:
+                if foto_dari_menu is not None:
                     st.rerun()
             except Exception as e:
                 st.error(f"Terjadi kesalahan: {e}")
