@@ -4,17 +4,54 @@ from google import genai
 from google.genai import types
 
 # 1. Konfigurasi Halaman Web
-st.set_page_config(page_title="AI Bot - Rio Ferdian", page_icon="🤖")
+st.set_page_config(page_title="AI Bot - Rio Ferdian", page_icon="🤖", layout="centered")
 
-# Header dan tombol hapus chat di bagian atas
-kolom_judul, kolom_tombol = st.columns([4, 1])
-with kolom_judul:
-    st.title("🤖 Asisten AI Pintar")
+# 2. CSS Kustom agar Tampilan Rapi Persis seperti ChatGPT di HP
+st.markdown("""
+<style>
+/* Menyembunyikan menu bawaan atas & footer Streamlit agar bersih */
+#MainMenu {visibility: hidden;}
+footer {visibility: hidden;}
+header {visibility: hidden;}
+
+/* Membuat tombol di bar bawah tetap sejajar menyamping di layar HP */
+div[data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+div[data-testid="stColumn"] {
+    min-width: 0 !important;
+}
+
+/* Merapikan tombol kamera agar bulat & pas di samping kotak chat */
+div[data-testid="stColumn"]:nth-child(2) button {
+    border-radius: 50% !important;
+    width: 46px !important;
+    height: 46px !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background-color: #262730 !important;
+    border: 1px solid #41444C !important;
+    font-size: 20px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# 3. Header Bersih Sejajar (Judul di Kiri, Tombol Hapus di Kanan)
+col_title, col_clear = st.columns([4, 1.3])
+with col_title:
+    st.markdown("### 🤖 Asisten AI Pintar")
     st.caption("Diciptakan oleh Rio Ferdian")
-with kolom_tombol:
-    st.write("")
-    if st.button("🗑️ Hapus"):
+with col_clear:
+    if st.button("🗑️ Hapus", use_container_width=True):
         st.session_state.messages = []
+        st.session_state.buka_kamera = False
+        st.session_state.foto_kamera = None
         if "client" in st.session_state:
             st.session_state.chat = st.session_state.client.chats.create(
                 model="gemini-3.5-flash-lite",
@@ -29,7 +66,9 @@ with kolom_tombol:
             )
         st.rerun()
 
-# 2. Mengambil API Key secara aman dari Secrets Streamlit
+st.divider()
+
+# 4. Inisialisasi API Key & Memori Chat
 API_KEY = st.secrets["GEMINI_API_KEY"]
 
 identitas_bot = """
@@ -38,7 +77,6 @@ Jika ada yang bertanya siapa penciptamu, pemilikmu, atau siapa yang membuatmu, j
 Jawablah selalu menggunakan bahasa Indonesia yang baik dan mudah dimengerti.
 """
 
-# 3. Simpan Client dan Sesi Obrolan di Memori Web
 if "client" not in st.session_state:
     st.session_state.client = genai.Client(api_key=API_KEY)
 
@@ -53,34 +91,63 @@ if "chat" not in st.session_state:
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "buka_kamera" not in st.session_state:
+    st.session_state.buka_kamera = False
+if "foto_kamera" not in st.session_state:
+    st.session_state.foto_kamera = None
 
-# 4. Menampilkan Riwayat Obrolan
+# 5. Menampilkan Riwayat Obrolan
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         if "image" in message and message["image"] is not None:
             st.image(message["image"], width=250)
         st.markdown(message["content"])
 
-# 5. Area Input Bawah: Kotak Ketik + Ikon Kamera Sejajar di Samping
-with st.container():
-    kolom_chat, kolom_kamera = st.columns([5, 1])
+# 6. Jendela Kamera (Hanya muncul saat tombol 📷 diklik)
+if st.session_state.buka_kamera:
+    with st.container(border=True):
+        col_cam_title, col_cam_close = st.columns([4, 1])
+        with col_cam_title:
+            st.markdown("**📸 Ambil Foto Langsung**")
+        with col_cam_close:
+            if st.button("✖️"):
+                st.session_state.buka_kamera = False
+                st.rerun()
+        
+        jepretan = st.camera_input("Arahkan kamera lalu jepret", label_visibility="collapsed")
+        if jepretan is not None:
+            st.session_state.foto_kamera = Image.open(jepretan)
+            st.session_state.buka_kamera = False
+            st.rerun()
 
-    with kolom_kamera:
-        foto_kamera = None
-        with st.popover("📷"):
-            jepretan = st.camera_input("Ambil foto")
-            if jepretan is not None:
-                foto_kamera = Image.open(jepretan)
-                st.success("Siap dikirim!")
+# Pratinjau mini jika foto kamera sudah diambil dan siap dikirim
+if st.session_state.foto_kamera is not None:
+    with st.container(border=True):
+        c1, c2, c3 = st.columns([1.2, 3, 1])
+        with c1:
+            st.image(st.session_state.foto_kamera, width=60)
+        with c2:
+            st.caption("✅ Foto kamera siap dikirim! Ketik pesan di bawah lalu kirim.")
+        with c3:
+            if st.button("Batal"):
+                st.session_state.foto_kamera = None
+                st.rerun()
 
-    with kolom_chat:
+# 7. Bar Bawah Melayang: Kotak Ketik (+ Galeri) Sejajar dengan Tombol Kamera 📷
+with st._bottom:
+    col_input, col_cam_btn = st.columns([6, 1])
+    with col_input:
         prompt_data = st.chat_input(
-            "Ketik pertanyaan atau lampirkan foto...",
+            "Tanya apa saja...",
             accept_file=True,
             file_type=["jpg", "jpeg", "png", "webp"]
         )
+    with col_cam_btn:
+        if st.button("📷", help="Buka Kamera"):
+            st.session_state.buka_kamera = not st.session_state.buka_kamera
+            st.rerun()
 
-# 6. Proses Pengiriman Pesan & Gambar
+# 8. Proses Pengiriman Pesan & Gambar
 if prompt_data:
     teks_pesan = prompt_data.text
     file_galeri = prompt_data.files[0] if prompt_data.files else None
@@ -88,8 +155,9 @@ if prompt_data:
     gambar_terpilih = None
     if file_galeri is not None:
         gambar_terpilih = Image.open(file_galeri)
-    elif foto_kamera is not None:
-        gambar_terpilih = foto_kamera
+    elif st.session_state.foto_kamera is not None:
+        gambar_terpilih = st.session_state.foto_kamera
+        st.session_state.foto_kamera = None  # Reset setelah terkirim
 
     if not teks_pesan and gambar_terpilih:
         teks_pesan = "Jelaskan isi gambar ini secara detail."
@@ -109,7 +177,7 @@ if prompt_data:
     isi_pesan = [gambar_terpilih, teks_pesan] if gambar_terpilih is not None else teks_pesan
 
     with st.chat_message("assistant"):
-        with st.spinner("Sedang menganalisis..."):
+        with st.spinner("Sedang berpikir..."):
             try:
                 response = st.session_state.chat.send_message(isi_pesan)
                 st.markdown(response.text)
